@@ -22,7 +22,7 @@ extern void delay_ms(unsigned int);
 
 // Window Creation strings (without initial escape sequence)
 char header[]  = {"w,1,0,0,100,3,1,"};                 // no title
-char window2[] = {"w,2,0,3,70,32,1,Data Webserver"};
+char window2[] = {"w,2,0,3,60,40,1,Data Webserver"};
 char window3[] = {"w,3,70,3,30,32,1,Calculated Values"};
 char window4[] = {"w,4,0,35,100,14,1,Terminal Input"};
 char footer[]  = {"w,5,0,49,100,1,0,"};                // no border, no title
@@ -220,6 +220,7 @@ void putint(uint8_t zahl)
    }
    puts(string);
 }
+
 void putint_right(uint8_t zahl)
 {
    char string[4];
@@ -238,6 +239,62 @@ void putint_right(uint8_t zahl)
       }
       zahl /= 10;
    }
+   puts(string);
+}
+
+void putint2(uint8_t zahl)
+{
+   char string[3];
+   int8_t i;                             // schleifenzähler
+   
+   if (zahl>99)
+   {
+      zahl %= 100;
+   }
+   string[2]='\0';                       // String Terminator
+   for(i=1; i>=0; i--)
+   {
+      string[i]=((zahl % 10) +'0');         // Modulo rechnen, dann den ASCII-Code von '0' addieren
+      zahl /= 10;
+   }
+   puts(string);
+}
+
+void putint2_right(uint8_t zahl)
+{
+   char string[3];
+   int8_t i;                             // schleifenzähler
+   if (zahl>99)
+   {
+      zahl %= 100;
+   }
+
+   string[2]='\0';                       // String Terminator
+   for(i=1; i>=0; i--)
+   {
+      if (zahl==0)
+      {
+         string[i] = ' '; // Leerschlag
+      }
+      else
+      {
+         string[i]=((zahl % 10) +'0');         // Modulo rechnen, dann den ASCII-Code von '0' addieren
+      }
+      zahl /= 10;
+   }
+   puts(string);
+}
+
+void putint1(uint8_t zahl)
+{
+   char string[2];
+   
+   if (zahl>9)
+   {
+      zahl %= 10;
+   }
+   string[1]='\0';                       // String Terminator
+   string[0]=(zahl +'0');         // Modulo rechnen, dann den ASCII-Code von '0' addieren
    puts(string);
 }
 

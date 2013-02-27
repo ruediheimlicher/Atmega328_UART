@@ -628,6 +628,8 @@ int main (void)
                      vga_command("f,2");
                      puts("Stop");
                      putint_right(linecounter);
+                     putch(' ');
+                     putint1(linecounter);
                      //newline();
                      vga_command("f,1");
                      //vga_command("e");
