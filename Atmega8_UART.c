@@ -553,8 +553,8 @@ int main (void)
   // OSZIA_HI;
    char teststring[] = {"p,10,12"};
    
-   lcd_gotoxy(0,0);
-   lcd_puts(teststring);
+   //lcd_gotoxy(0,0);
+   //lcd_puts(teststring);
    /*
     _putch(0x1B);
     _putch('[');
@@ -567,6 +567,7 @@ int main (void)
 
     */
    
+   /*
    lcd_gotoxy(0,1);
    lcd_putint2(strlen(teststring));
    lcd_putc(' ');
@@ -586,7 +587,7 @@ int main (void)
    lcd_putc(' ');
    lcd_putc(teststring[6]);
    lcd_putc('*');
-
+    */
    
    vga_start();
    
@@ -632,8 +633,9 @@ int main (void)
                      putint1(linecounter);
                      //newline();
                      vga_command("f,1");
-                     //vga_command("e");
+                     vga_command("e");
                      puts("Daten");
+                     putint_right(linecounter);
                      vga_command("f,2");
                      //vga_command("e");
                      
@@ -886,7 +888,7 @@ int main (void)
 				
 				
 			}//										if (!(spistatus & (1<<ACTIVE_BIT)))
-		}//											(IS_CS_HC_ACTIVE) 
+		}//											(IS_CS_HC_ACTIVE)
 		
 		/* *** SPI end **************************************************************/
       
@@ -895,5 +897,6 @@ int main (void)
 	} // while
 	
 	
+   
 	return 0;
 }

@@ -37,7 +37,7 @@ extern volatile uint8_t in_enddaten;					// Enddaten vom Master, Anzeige fuer vo
 #define SPI_CONTROL_MOSI		PORTD6	// Eingang fuer Daten vom Master
 #define SPI_CONTROL_MISO		PORTD5	// Ausgang fuer Daten zum Master
 #define SPI_CONTROL_CS_HC		PORTD4	// CS fuer HomeCentral Master
-#define SPI_CONTROL_SCK			PORTD3	// INT0 als Eingang fuer CLK
+#define SPI_CONTROL_SCK			PORTD3	// INT1 als Eingang fuer CLK
 
 
 // defines fuer spistatus
@@ -139,9 +139,9 @@ static volatile uint8_t						startbitpos=0;
 #define SPI_CONTROL_PORT		PORTD
 #define SPI_CONTROL_PORTPIN	PIND
 
-#define SPI_CONTROL_MOSI		PORTD0	// Eingang fuer Daten vom Master
-#define SPI_CONTROL_MISO		PORTD1	// Ausgang fuer Daten zum Master
-#define SPI_CONTROL_SCK			PORTD3	// INT0 als Eingang fuer CLK
+//#define SPI_CONTROL_MOSI		PORTD0	// Eingang fuer Daten vom Master
+//#define SPI_CONTROL_MISO		PORTD1	// Ausgang fuer Daten zum Master
+//#define SPI_CONTROL_SCK			PORTD2	// INT0 als Eingang fuer CLK
 //#define SPI_CONTROL_CS_HC		PORTD3	// CS fuer HomeCentral Master
 
 #define SPI_INT_DDR				DDRD
