@@ -480,7 +480,7 @@ int main (void)
    
     
    
-    
+   
    
    
    uint8_t linecounter=0;
@@ -494,9 +494,33 @@ int main (void)
    
    
    initADC(TASTATURKANAL);
+   
    vga_start();
+   vga_command("f,2");
+   gotoxy(10,10);
+   vga_command("f,2");
+   puts("Alpha");
+   gotoxy(10,11);
+   vga_command("f,2");
+   puts("Beta");
+   gotoxy(10,12);
+   vga_command("f,2");
+   puts("Gamma");
+   gotoxy(10,13);
+   vga_command("f,2");
+   puts("Delta");
+   
+   cursorx=9;
+   cursory=10;
+   
+   gotoxy(cursorx,cursory);
+   vga_command("f,2");
+   putch('*');
    
    startcounter = 0;
+   linecounter=0;
+   uint8_t lastrand=rand();
+   srand(1);
 	while (1)
 	{
 		
@@ -507,7 +531,7 @@ int main (void)
 			readSR();
 			loopCount1++;
 			
-			if ((loopCount1 >0x00FF) )//&& (!(Programmstatus & (1<<MANUELL))))
+			if ((loopCount1 >0x01FF) )//&& (!(Programmstatus & (1<<MANUELL))))
 			{
              LOOPLED_PORT ^= (1<<LOOPLED_PIN);
              {
@@ -556,6 +580,7 @@ int main (void)
                }
                */
                loopCount1=0;
+               
             } // if startcounter
             
          }
@@ -563,12 +588,13 @@ int main (void)
 			loopCount0 =0;
       //
          Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
-         tastaturstatus |= (1<<1);
+         
          //lcd_gotoxy(12,1);
          //lcd_puts("TW:\0");
          //lcd_putint(Tastenwert);
          if (Tastenwert>5) // ca Minimalwert der Matrix
          {
+             tastaturstatus |= (1<<1);
             //			wdt_reset();
             /*
              0: Wochenplaninit
@@ -584,40 +610,63 @@ int main (void)
              
              12: Ebene höher
              */
-            
+            TastaturCount++;
             if (tastaturstatus & (1<<1))
             {
-               TastaturCount++;
+               
             }
-            if (TastaturCount>=10)	//	Prellen
+            
+            if (TastaturCount>=80)	//	Prellen
             {
                tastaturstatus &= ~(1<<1);
                Taste=Tastenwahl(Tastenwert);
                lcd_gotoxy(0,1);
                lcd_puts("T:\0");
-               //lcd_gotoxy(14,1);
+               //
                lcd_putc(' ');
-               lcd_putint2(Tastenwert);
-               
-               vga_command("f,2");
-               putch(' ');
+               lcd_putint(Tastenwert);
                lcd_putc(' ');
-               if (Taste >=0)
+                if (Taste >=0)
                {
-               lcd_putint2(Taste);
+                  lcd_putint2(Taste);
                }
                else
                {
                   lcd_putc('*');
                }
-               gotoxy(0,linecounter);
+               
+               lcd_gotoxy(14,1);
+               
+               lcd_putint(linecounter);
+               lcd_putc(' ');
+               lcd_putint((uint8_t)rand()%40);
+               
+               //newline();
+                              if (linecounter > 4)
+               {
+                  gotoxy(lastrand%0x30,rand()%0x30);
+                  
+               }
+               lastrand = rand();
+               vga_command("f,2");
+
+             
+               
+               
+
+               //putch(' ');
+               
+               //gotoxy(4,linecounter);
+               //lcd_gotoxy(16,1);
+               //lcd_putint(erg);
+               
                putint(linecounter);
                putch(' ');
                putint_right(Tastenwert);
                putch(' ');
                putint_right(Taste);
                
-               newline();
+               //newline();
                linecounter++;
                TastaturCount=0;
 
@@ -910,7 +959,7 @@ int main (void)
       
      
       //Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
-      Tastenwert=0;
+      //Tastenwert=0;
       
       
       if (Tastenwert>23) // ca Minimalwert der Matrix

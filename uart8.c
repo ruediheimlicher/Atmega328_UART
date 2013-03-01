@@ -172,17 +172,15 @@ void clrscr(void)
    putch('J');
 }
 
-void gotoxy(uint8_t x, uint8_t y)
+uint8_t gotoxy(uint8_t x, uint8_t y)
 {
    if (x>MAX_X || y>MAX_Y)
-      return;
+      
+      return 1;
    
-   x--;
-   y--;
+   //x--;
+   //y--;
    
-   char gotostring[] = {"p,10,10"};
-   char command = 'p';
-   char params[10] = {};
    
    
    //sprintf(params,"p,%d,%d",x,y);
@@ -197,7 +195,7 @@ void gotoxy(uint8_t x, uint8_t y)
    putch(',');
    putch((y/10)+'0');
    putch((y%10)+'0');
-      //putch(0);
+   putch(0);
    /*
    putch((y/10)+'0');
    putch((y%10)+'0');
@@ -206,7 +204,8 @@ void gotoxy(uint8_t x, uint8_t y)
    putch((x%10)+'0');
     */
    putch(0xD0);
-   
+  
+   return 0;
 }
 
 void putint(uint8_t zahl)
