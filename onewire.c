@@ -41,7 +41,7 @@ void ow_delay_us(uint8_t us)
         }
 }
 
-inline uint8_t ow_input_pin_state()
+inline uint8_t ow_input_pin_state(void)
 {
         if (OW_GET_IN()){
                 return(1);

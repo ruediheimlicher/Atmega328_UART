@@ -16,11 +16,14 @@ struct adcwert16 ADCWert16;
 
 struct adcwert16 readKanal16Bit(uint8_t kanal)
 {
+
+   
  uint8_t i;
  struct adcwert16 tempWert;
  tempWert.wertH=0;
  tempWert.wertL=0;
   tempWert.wert8H=0;
+ 
   ADCSRA = (1<<ADEN) | (1<<ADPS2) | (1<<ADPS0);    // Frequenzvorteiler auf 32 setzen und ADC aktivieren 
  
   ADMUX = kanal;                      // Ÿbergebenen Kanal waehlen
@@ -58,7 +61,7 @@ void initADC(uint8_t derKanal)
 	//ADMUX |= (1<<REFS1) | (1<<REFS0); // interne Referenzspannung nutzen 
   //if (test)
   {
-  //ADMUX |= (1<<REFS0); // VCC als Referenzspannung nutzen 
+  ADMUX |= (1<<REFS0); // VCC als Referenzspannung nutzen 
   }
  
   /* nach Aktivieren des ADC wird ein "Dummy-Readout" empfohlen, man liest
@@ -75,16 +78,19 @@ uint16_t readKanal(uint8_t derKanal) //Unsere Funktion zum ADC-Channel aus lesen
   uint16_t result = 0;         //Initialisieren wichtig, da lokale Variablen
                                //nicht automatisch initialisiert werden und
                                //zufŠllige Werte haben. Sonst kann Quatsch rauskommen
- ADMUX = derKanal; 
+ 
+   ADMUX = derKanal;
   // Eigentliche Messung - Mittelwert aus 4 aufeinanderfolgenden Wandlungen
   for(i=0;i<4;i++)
   {
     ADCSRA |= (1<<ADSC);            // eine Wandlung
-    while ( ADCSRA & (1<<ADSC) ) {
+    while ( ADCSRA & (1<<ADSC) )
+    {
       ;     // auf Abschluss der Wandlung warten 
     }
     result += ADCW;            // Wandlungsergebnisse aufaddieren
   }
+   
 //  ADCSRA &= ~(1<<ADEN);             // ADC deaktivieren ("Enable-Bit" auf LOW setzen)
  
   result /= 4;                     // Summe durch vier teilen = arithm. Mittelwert

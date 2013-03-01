@@ -7,8 +7,8 @@
 #define UART_PORT		PORTC
 #define UART_PIN		PINC
 #define UART_DDR		DDRC
-#define RTS_PIN      5
-#define CTS_PIN      4
+//#define RTS_PIN      5
+//#define CTS_PIN      4
 
 //defines max coordinates for checking overflow
 #define MAX_X 100
@@ -74,11 +74,13 @@ void uart_init (void)
    //   fifo_init (&infifo,   inbuf, BUFSIZE_IN);
    //   fifo_init (&outfifo, outbuf, BUFSIZE_OUT);
    
+   /*
    UART_DDR &= ~(1<<RTS_PIN); // Eingang
    UART_PORT |= ~(1<<RTS_PIN);
    
    UART_DDR |= (1<< CTS_PIN); // Ausgang
    UART_PORT |= ~(1<<CTS_PIN); // HI
+    */
 }
 
 
@@ -226,7 +228,15 @@ void putint_right(uint8_t zahl)
    char string[4];
    int8_t i;                             // schleifenzähler
    
-   string[3]='\0';                       // String Terminator
+   string[3]='\0';// String Terminator
+   if (zahl == 0)
+   {
+      string[2]= '0';
+      string[1]= ' ';
+      string[0]= ' ';
+      puts(string);
+      return;
+   }
    for(i=2; i>=0; i--)
    {
       if (zahl==0)
@@ -245,6 +255,15 @@ void putint_right(uint8_t zahl)
 void putint2(uint8_t zahl)
 {
    char string[3];
+   string[2]='\0';// String Terminator
+   if (zahl == 0)
+   {
+      string[1]= '0';
+      string[0]= ' ';
+      puts(string);
+      return;
+   }
+
    int8_t i;                             // schleifenzähler
    
    if (zahl>99)

@@ -118,7 +118,7 @@ volatile uint8_t								complement=0;		//Zweiercomplement
 static volatile uint8_t						bitpos=0xFF;
 static volatile uint8_t						startbitpos=0;
 
-
+/*
 
 #define OSZIPORT				PORTA
 #define OSZIPORTDDR			DDRA
@@ -134,6 +134,7 @@ static volatile uint8_t						startbitpos=0;
 #ifndef OSZIATOG
 #define OSZIATOG OSZIAPORT ^= (1<<PULSA)
 #endif
+*/
 
 #define SPI_CONTROL_DDR			DDRD
 #define SPI_CONTROL_PORT		PORTD
@@ -266,16 +267,16 @@ void InitSPI_Slave(void)
     */
    
    // Atmega8
-	// interrupt on INT0 pin falling edge (sensor triggered)
+	// interrupt on INT1 pin falling edge (sensor triggered)
 	MCUCR = (1<<ISC11) ;//| (0<<ISC00);
 	
 	// turn on interrupts!
-	GICR  |= (1<<INT0);
+	GICR  |= (1<<INT1);
    
    
 	_delay_us(5);
 
-	sei(); // Enable global interrupts
+	//sei(); // Enable global interrupts
 
 } 
 

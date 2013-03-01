@@ -18,6 +18,7 @@
 #include <avr/delay.h>
 #include <avr/wdt.h>
 
+#include "def.h"
 #include "lcd.c"
 #include "adc.c"
 #include "kbd.h"
@@ -30,79 +31,6 @@
 #include "ds18x20.c"
 #include "crc8.c"
 
-uint16_t loopCount0=0;
-uint16_t loopCount1=0;
-uint16_t loopCount2=0;
-
-#define TWI_PORT		PORTC
-#define TWI_PIN		PINC
-#define TWI_DDR		DDRC
-
-#define UART_PORT		PORTC
-#define UART_PIN		PINC
-#define UART_DDR		DDRC
-#define RTS_PIN      5
-#define CTS_PIN      4
-
-
-
-#define TWI_ERR_BIT				7
-
-
-#define SDAPIN       4
-#define SCLPIN       5
-
-
-#define LOOPLED_PORT	PORTD
-#define LOOPLED_DDR	DDRD
-#define LOOPLED_PIN	7
-
-/*
-#define OSZIPORT     PORTD
-#define OSZIDDR      DDRD
-#define OSZIA        5
-#define OSZIB        6
- */
-
-#define OSZIA_HI  OSZIPORT |= (1<< OSZIA)
-#define OSZIA_LO  OSZIPORT &= ~(1<< OSZIA)
-#define OSZIB_HI  OSZIPORT |= (1<< OSZIB)
-#define OSZIB_LO  OSZIPORT &= ~(1<< OSZIB)
-
-#define TASTE1		19
-#define TASTE2		29
-#define TASTE3		44
-#define TASTE4		67
-#define TASTE5		94
-#define TASTE6		122
-#define TASTE7		155
-#define TASTE8		186
-#define TASTE9		205
-#define TASTEL		223
-#define TASTE0		236
-#define TASTER		248
-#define TASTATURPORT PORTC
-#define TASTATURPIN		3
-
-#define MANUELL_PORT		PORTD
-#define MANUELL_DDR		DDRD
-#define MANUELL_PIN		PIND
-
-#define MANUELL			7	// Bit 7 von Status 
-#define MANUELLPIN		6	// Pin 6 von PORT D fuer Anzeige Manuell
-#define MANUELLNEU		7	// Pin 7 von Status. Gesetzt wenn neue Schalterposition eingestellt
-#define MANUELLTIMEOUT	100 // Loopled-counts bis Manuell zurueckgesetzt wird. 02FF: ca. 100 s
-
-volatile uint8_t					Programmstatus=0x00;
-	uint8_t Tastenwert=0;
-	uint8_t TastaturCount=0;
-volatile uint16_t		Manuellcounter=0; // Counter fuer Timeout	
-	uint16_t TastenStatus=0;
-	uint16_t Tastencount=0;
-	uint16_t Tastenprellen=0x01F;
-
-volatile uint8_t uartstatus=0;
-uint16_t startcounter=0x00;
 
 
 void delay_ms(unsigned int ms)
@@ -165,25 +93,73 @@ return 12;
 return -1;
 }
 
+void readSR (void)
+{
+	// Schalterstellung in SR laden
+	SR_PORT &= ~(1<<SR_LOAD_PIN); // PL> LO
+	_delay_us(10);
+	SR_PORT |= (1<<SR_LOAD_PIN); // PL> HI
+	_delay_us(1);
+	uint8_t i=0;
+	Tastaturabfrage=0;
+   return;
+	//Read_Device=0x00;
+	//Daten aus SR schieben
+	for (i=0;i<8;i++)
+	{
+		//uint8_t pos=15-i;
+		// Bit lesen
+		if (SR_PIN & (1<<SR_DATA_PIN)) // PIN ist Hi, OFF
+		{
+			//Bit is HI
+			if (i<8) // Byte 1
+			{
+				Tastaturabfrage |= (0<<(i)); // auf Device i soll geschrieben werden
+			}
+         /*
+			else
+			{
+				Read_Device |= (0<<(i-8));	// von Device i soll gelesen werden
+			}
+			*/
+			
+		}
+		else
+		{
+			//Bit is LO
+			if (i<8) // Byte 1
+			{
+				Tastaturabfrage |= (1<<i); // auf Device i soll geschrieben werden
+			}
+         /*
+			else
+			{
+				Read_Device |= (1<<(i-8));	// von Device i soll gelesen werden
+			}
+			*/
+		}
+		
+		// SR weiterschieben
+		
+		SR_PORT &= ~(1<<SR_CLK_PIN); // CLK LO
+		_delay_us(10);
+		SR_PORT |= (1<<SR_CLK_PIN); // CLK HI, shift
+		_delay_us(10);
+		
+	} // for i
+	
+}
+
 
 void slaveinit(void)
 {
 	MANUELL_DDR |= (1<<MANUELLPIN);		//Pin 5 von PORT D als Ausgang fuer Manuell
 	MANUELL_PORT &= ~(1<<MANUELLPIN);
- 	//DDRD |= (1<<CONTROL_A);	//Pin 6 von PORT D als Ausgang fuer Servo-Enable
-	//DDRD |= (1<<CONTROL_B);	//Pin 7 von PORT D als Ausgang fuer Servo-Impuls
+
 	LOOPLED_DDR |= (1<<LOOPLED_PIN);
-	//PORTD &= ~(1<<CONTROL_B);
-	//PORTD &= ~(1<<CONTROL_A);
 
-	//DDRB &= ~(1<<PORTB2);	//Bit 2 von PORT B als Eingang fuer Brennerpin
-	//PORTB |= (1<<PORTB2);	//HI
-	
-//	DDRB |= (1<<PORTB2);	//Bit 2 von PORT B als Ausgang fuer PWM
-//	PORTB &= ~(1<<PORTB2);	//LO
-
-	DDRB |= (1<<PORTB1);	//Bit 1 von PORT B als Ausgang fuer PWM
-	PORTB &= ~(1<<PORTB1);	//LO
+	DDRB &= ~(1<<PORTB0);	//Bit 1 von PORT B als Eingang fuer Taste
+	PORTB |= (1<<PORTB0);	//HI
    
 	
 
@@ -200,17 +176,12 @@ void slaveinit(void)
 	TWI_DDR &= ~(1<<SCLPIN);//Bit 5 von PORT C als Eingang für SCL
 	TWI_PORT |= (1<<SCLPIN); // HI
 */
+   SR_DDR |= (1<<SR_PIN); // Schiebetakt
+   SR_PORT |= (1<<SR_PIN);
 
-	/*
-	DDRC &= ~(1<<PORTC0);	//Pin 0 von PORT C als Eingang fuer Vorlauf 	
-//	PORTC |= (1<<DDC0); //Pull-up
-	DDRC &= ~(1<<PORTC1);	//Pin 1 von PORT C als Eingang fuer Ruecklauf 	
-//	PORTC |= (1<<DDC1); //Pull-up
-	DDRC &= ~(1<<PORTC2);	//Pin 2 von PORT C als Eingang fuer Aussen	
-//	PORTC |= (1<<DDC2); //Pull-up
-	DDRC &= ~(1<<PORTC3);	//Pin 3 von PORT C als Eingang fuer Tastatur 	
-	//PORTC &= ~(1<<DDC3); //Pull-up
-	*/
+   ADC_DDR &= ~(1<<TASTATURKANAL);	//Pin 4 von PORT C als Eingang fuer Tastatur
+   ADC_PORT &= ~(1<<TASTATURKANAL); //Pull-up
+
    
    /*
    OSZIDDR |= (1<<OSZIA);
@@ -494,20 +465,17 @@ int main (void)
 	lcd_puts("Guten Tag\0");
 	delay_ms(1000);
    
-	lcd_cls();
-	lcd_puts("READY\0");
-	
+	//lcd_cls();
+	//lcd_puts("READY\0");
+	delay_ms(1000);
 	// DS1820 init-stuff begin
    
    uart_init();
    
-   InitSPI_Slave();
-   
-  // sei();   // Wird nur gebraucht bei der Interrupt-Version
+  // InitSPI_Slave();
    
   volatile char text[8]="********";
    
-   UART_PORT &= ~(1<<CTS_PIN);
    _delay_ms(2);
    
     
@@ -515,80 +483,17 @@ int main (void)
     
    
    
- //  _textcolor(MAGENTA);
- //  _textbackground(GREEN);
-   
-  // _textcolor(WHITE);
-   
-   //gotoxy(10,2);
-   /*
-   lcd_putc('C');
-   _putch('R');
-   lcd_putc('D');
-   _putch('u');
-   _putch('e');
-   _putch('d');
-   _putch('i');
-   _putch(' ');
-   _putch('H');
-   _putch('e');
-   _putch('i');
-   _putch('m');
-   _putch('l');
-   _putch('i');
-   _putch('c');
-   _putch('h');
-   _putch('e');
-   _putch('r');
-*/
-  // _newline();
-   
-//   UART_PORT |= (1<<CTS_PIN);
    uint8_t linecounter=0;
    
    uint8_t SPI_Call_count0=0;
-
+   lcd_cls();
    lcd_puts(" UART\0");
 #pragma mark while
   // OSZIA_HI;
    char teststring[] = {"p,10,12"};
    
-   //lcd_gotoxy(0,0);
-   //lcd_puts(teststring);
-   /*
-    _putch(0x1B);
-    _putch('[');
-    _putch((y/10)+'0');
-    _putch((y%10)+'0');
-    _putch(';');
-    _putch((x/10)+'0');
-    _putch((x%10)+'0');
-    _putch('f');
-
-    */
    
-   /*
-   lcd_gotoxy(0,1);
-   lcd_putint2(strlen(teststring));
-   lcd_putc(' ');
-   lcd_putc(teststring[0]);
-   lcd_putc(' ');
-   lcd_putc(teststring[1]);
-   lcd_putc(' ');
-   lcd_putc(teststring[2]);
-
-   lcd_putc(' ');
-   lcd_putc(teststring[3]);
-   lcd_putc(' ');
-   lcd_putc(teststring[4]);
-
-   lcd_putc(' ');
-   lcd_putc(teststring[5]);
-   lcd_putc(' ');
-   lcd_putc(teststring[6]);
-   lcd_putc('*');
-    */
-   
+   initADC(TASTATURKANAL);
    vga_start();
    
    startcounter = 0;
@@ -599,19 +504,23 @@ int main (void)
 		
 		if (loopCount0 >=0x00FF)
 		{
-			
+			readSR();
 			loopCount1++;
 			
-			if ((loopCount1 >0x02FF) )//&& (!(Programmstatus & (1<<MANUELL))))
+			if ((loopCount1 >0x00FF) )//&& (!(Programmstatus & (1<<MANUELL))))
 			{
              LOOPLED_PORT ^= (1<<LOOPLED_PIN);
              {
+                /*
                loopCount2++;
                vga_command("f,2");
-               puts("HomeCentral ");
-               puts("Rueti ");
+               //puts("HomeCentral ");
+                puts("Tastenwert ");
+               putint(Tastenwert);
                putch(' ');
-              
+              newline();
+                 */
+                /*
                if (loopCount2 > 2)
                {
                   newline();
@@ -630,7 +539,7 @@ int main (void)
                      puts("Stop");
                      putint_right(linecounter);
                      putch(' ');
-                     putint1(linecounter);
+                     putint(Tastenwert);
                      //newline();
                      vga_command("f,1");
                      vga_command("e");
@@ -645,13 +554,78 @@ int main (void)
                   }
                   loopCount2=0;
                }
-               
+               */
                loopCount1=0;
             } // if startcounter
             
          }
 			
 			loopCount0 =0;
+      //
+         Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
+         tastaturstatus |= (1<<1);
+         //lcd_gotoxy(12,1);
+         //lcd_puts("TW:\0");
+         //lcd_putint(Tastenwert);
+         if (Tastenwert>5) // ca Minimalwert der Matrix
+         {
+            //			wdt_reset();
+            /*
+             0: Wochenplaninit
+             1: IOW 8* 2 Bytes auf Bus laden
+             2: Menu der aktuellen Ebene nach oben
+             3: IOW 2 Bytes vom Bus in Reg laden
+             4: Auf aktueller Ebene nach rechts (Heizung: Vortag lesen und anzeigen)
+             5: Ebene tiefer
+             6: Auf aktueller Ebene nach links (Heizung: Folgetag lesen und anzeigen)
+             7:
+             8: Menu der aktuellen Ebene nach unten
+             9: DCF77 lesen
+             
+             12: Ebene höher
+             */
+            
+            if (tastaturstatus & (1<<1))
+            {
+               TastaturCount++;
+            }
+            if (TastaturCount>=10)	//	Prellen
+            {
+               tastaturstatus &= ~(1<<1);
+               Taste=Tastenwahl(Tastenwert);
+               lcd_gotoxy(0,1);
+               lcd_puts("T:\0");
+               //lcd_gotoxy(14,1);
+               lcd_putc(' ');
+               lcd_putint2(Tastenwert);
+               
+               vga_command("f,2");
+               putch(' ');
+               lcd_putc(' ');
+               if (Taste >=0)
+               {
+               lcd_putint2(Taste);
+               }
+               else
+               {
+                  lcd_putc('*');
+               }
+               gotoxy(0,linecounter);
+               putint(linecounter);
+               putch(' ');
+               putint_right(Tastenwert);
+               putch(' ');
+               putint_right(Taste);
+               
+               newline();
+               linecounter++;
+               TastaturCount=0;
+
+            }
+            
+         } // if Tastenwert
+
+         //
 		}
       
       /* *** SPI begin **************************************************************/
@@ -892,8 +866,84 @@ int main (void)
 		
 		/* *** SPI end **************************************************************/
       
+# pragma mark Tasten	
+      
+      if (!(PINB & (1<<PORTB0))) // Taste 0
+		{
+			//lcd_gotoxy(12,0);
+			//lcd_puts("P0 Down\0");
+			//wdt_reset();
+			if (! (TastenStatus & (1<<PORTB0))) //Taste 0 war nicht nicht gedrueckt
+			{
+				TastenStatus |= (1<<PORTB0);
+				Tastencount=0;
+				//lcd_gotoxy(12,0);
+				//lcd_puts("P0\0");
+				//lcd_putint(TastenStatus);
+				//delay_ms(800);
+			}
+			else
+			{
+				
+				Tastencount ++;
+				//lcd_gotoxy(7,1);
+				//lcd_puts("TC \0");
+				//lcd_putint(Tastencount);
+				wdt_reset();
+				if (Tastencount >= Tastenprellen)
+				{
+					//lcd_gotoxy(18,0);
+					//lcd_puts("ON\0");
+					//lcd_putint(TastenStatus);
+					
+					Tastencount=0;
+					TastenStatus &= ~(1<<PORTB0);
+					
+				}
+			}//else
+			
+		}
+
+      
+#pragma mark Tastatur
       
       
+     
+      //Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
+      Tastenwert=0;
+      
+      
+      if (Tastenwert>23) // ca Minimalwert der Matrix
+      {
+         //			wdt_reset();
+         /*
+          0: Wochenplaninit
+          1: IOW 8* 2 Bytes auf Bus laden
+          2: Menu der aktuellen Ebene nach oben
+          3: IOW 2 Bytes vom Bus in Reg laden
+          4: Auf aktueller Ebene nach rechts (Heizung: Vortag lesen und anzeigen)
+          5: Ebene tiefer
+          6: Auf aktueller Ebene nach links (Heizung: Folgetag lesen und anzeigen)
+          7:
+          8: Menu der aktuellen Ebene nach unten
+          9: DCF77 lesen
+          
+          12: Ebene höher
+          */
+         /*
+         TastaturCount++;
+         if (TastaturCount>=8)	//	Prellen
+         {
+            Taste=Tastenwahl(Tastenwert);
+            lcd_gotoxy(12,1);
+            lcd_puts("T:\0");
+            lcd_gotoxy(14,1);
+            lcd_putint2(Taste);
+            
+         }
+         */
+      } // if Tastenwert
+ 
 	} // while
 	
 	

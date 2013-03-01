@@ -12,6 +12,13 @@ struct adcwert16 {
   uint8_t wert8H;//obere 8 Bit
 };
 
+#define ADC_PORT     PORTC
+#define ADC_DDR      DDRC
+#define ADC_PIN      PINC
+
+
+#define TASTATURKANAL 4
+
 extern struct adcwert16 ADCWert16;
 
 struct adcwert16 readKanal16Bit(uint8_t kanal);
