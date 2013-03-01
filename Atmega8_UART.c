@@ -496,26 +496,7 @@ int main (void)
    initADC(TASTATURKANAL);
    
    vga_start();
-   vga_command("f,2");
-   gotoxy(10,10);
-   vga_command("f,2");
-   puts("Alpha");
-   gotoxy(10,11);
-   vga_command("f,2");
-   puts("Beta");
-   gotoxy(10,12);
-   vga_command("f,2");
-   puts("Gamma");
-   gotoxy(10,13);
-   vga_command("f,2");
-   puts("Delta");
    
-   cursorx=9;
-   cursory=10;
-   
-   gotoxy(cursorx,cursory);
-   vga_command("f,2");
-   putch('*');
    
    startcounter = 0;
    linecounter=0;
@@ -641,12 +622,124 @@ int main (void)
                lcd_putc(' ');
                lcd_putint((uint8_t)rand()%40);
                
-               //newline();
-                              if (linecounter > 4)
+               switch (Taste)
                {
-                  gotoxy(lastrand%0x30,rand()%0x30);
-                  
-               }
+                  case 1:
+                  {
+                     
+                  }break;
+                  case 2:
+                  {
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch(' ');
+
+                     cursory--;
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch('>');
+                     
+                  }break;
+                  case 3:
+                  {
+                     
+                  }break;
+                  case 4:
+                  {
+                     if (cursorx>10)
+                     {
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch(' ');
+                     cursorx-=10;
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch('>');
+                     }
+
+                  }break;
+                  case 5:
+                  {
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch('>');
+
+                  }break;
+                  case 6:
+                  {
+                     if (cursorx<40)
+                     {
+
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch(' ');
+                     
+                     cursorx+=10;
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch('>');
+                     }
+
+                  }break;
+                  case 7:
+                  {
+                     
+                  }break;
+                  case 8:
+                  {
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch(' ');
+
+                     cursory++;
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch('>');
+
+                  }break;
+                  case 9:
+                  {
+                     
+                  }break;
+                  case 10:
+                  {
+                     
+                  }break;
+                  case 11:
+                  {
+                     
+                  }break;
+                  case 12:
+                  {
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,2");
+                     putch(' ');
+                    
+                     vga_command("f,2");
+                     gotoxy(10,10);
+                     vga_command("f,2");
+                     puts("Alpha");
+                     gotoxy(10,11);
+                     vga_command("f,2");
+                     puts("Beta");
+                     gotoxy(10,12);
+                     vga_command("f,2");
+                     puts("Gamma");
+                     gotoxy(10,13);
+                     vga_command("f,2");
+                     puts("Delta");
+                     
+                     cursorx=9;
+                     cursory=10;
+
+                  }break;
+                     
+                     
+               } // switch Taste
+               
+               gotoxy(cursorx,cursory);
+               vga_command("f,2");
+               putch('*');
                lastrand = rand();
                vga_command("f,2");
 
@@ -659,13 +752,13 @@ int main (void)
                //gotoxy(4,linecounter);
                //lcd_gotoxy(16,1);
                //lcd_putint(erg);
-               
+               /*
                putint(linecounter);
                putch(' ');
                putint_right(Tastenwert);
                putch(' ');
                putint_right(Taste);
-               
+               */
                //newline();
                linecounter++;
                TastaturCount=0;
