@@ -301,7 +301,7 @@ lcd_strobe_E(void)
         /* strobe E signal */
         LCD_PORT |= _BV(LCD_ENABLE_PIN);
         _delay_us(450); 
-	//	lcddelay_ms(100);
+	
         LCD_PORT &= ~_BV(LCD_ENABLE_PIN);
 }
 

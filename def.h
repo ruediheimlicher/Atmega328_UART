@@ -96,4 +96,8 @@ uint16_t Tastenprellen=0x01F;
 volatile uint8_t uartstatus=0;
 uint16_t startcounter=0x00;
 
+#define CURSORX   2
+#define CURSORY   2
+#define MAXMENUEBENE 2
 uint8_t cursorx=0,cursory=0;
+uint8_t menuebene=0;

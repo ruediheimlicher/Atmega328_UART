@@ -27,9 +27,9 @@
 #include "SPI_slave.c"
 #include "uart8.c"
 
-#include "onewire.c"
-#include "ds18x20.c"
-#include "crc8.c"
+//#include "onewire.c"
+//#include "ds18x20.c"
+//#include "crc8.c"
 
 
 
@@ -59,7 +59,39 @@ uint8_t inbuf[BUFSIZE_IN];
 uint8_t outbuf[BUFSIZE_OUT];
 //fifo_t outfifo;
 
+void setHomeCentral(void)
+{
+   //char header[]  = {"w,1,0,0,100,3,1,"};                 // no title
 
+   //char footer[]  = {"w,5,0,49,100,1,0,"};
+   // char window2[] = {"w,2,0,3,60,40,1,Data Webserver"};
+   vga_command("r");
+   //delay_ms(1000);
+   uint8_t posy=0;
+   //vga_command(header);       // Create header
+   setFeld(1,0,0,100,3,1,"");
+   vga_command("f,1");
+   puts("Home Central Rueti");
+   
+
+   posy+= 3;
+   setFeld(2,0,posy,100,6,1,""); // Heizung
+   vga_command("f,2");
+   puts("Heizung");
+
+   posy+= 6;
+   setFeld(3,0,posy,100,3,1,""); // Werkstatt
+   vga_command("f,3");
+   puts("Werkstatt");
+
+   posy+= 3;
+   setFeld(4,0,posy,100,3,1,""); // WoZi
+   vga_command("f,1");
+   puts("WoZi");
+
+   
+
+}
 
 uint8_t Tastenwahl(uint8_t Tastaturwert)
 {
@@ -474,20 +506,12 @@ int main (void)
    
   // InitSPI_Slave();
    
-  volatile char text[8]="********";
-   
-   _delay_ms(2);
-   
-    
-   
-   
-   
-   
    uint8_t linecounter=0;
    
    uint8_t SPI_Call_count0=0;
    lcd_cls();
-   lcd_puts(" UART\0");
+   lcd_puts("UART\0");
+   
 #pragma mark while
   // OSZIA_HI;
    char teststring[] = {"p,10,12"};
@@ -495,16 +519,16 @@ int main (void)
    
    initADC(TASTATURKANAL);
    
-   vga_start();
+ //  vga_start();
    
-   
+   setHomeCentral();
+   vga_command("f,1");
    startcounter = 0;
    linecounter=0;
    uint8_t lastrand=rand();
    srand(1);
 	while (1)
 	{
-		
 		loopCount0 ++;
 		
 		if (loopCount0 >=0x00FF)
@@ -626,17 +650,21 @@ int main (void)
                {
                   case 1:
                   {
-                     
+                     vga_command("f,2");
+                     gotoxy(0,2);
+                     vga_command("f,2");
+                     puts("Brenner: ");
                   }break;
                   case 2:
                   {
+                     vga_command("f,3");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch(' ');
 
                      cursory--;
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch('>');
                      
                   }break;
@@ -646,54 +674,69 @@ int main (void)
                   }break;
                   case 4:
                   {
+                     if (menuebene)
+                     {
+                        menuebene--;
                      if (cursorx>10)
                      {
+                     vga_command("f,3");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch(' ');
                      cursorx-=10;
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch('>');
+                     }
                      }
 
                   }break;
                   case 5:
                   {
+                     vga_command("f,3");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch('>');
 
                   }break;
                   case 6:
                   {
+                     if (menuebene<MAXMENUEBENE)
+                     {
+                        menuebene++;
                      if (cursorx<40)
                      {
-
+                        vga_command("f,3");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch(' ');
                      
                      cursorx+=10;
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch('>');
                      }
-
+                     }
                   }break;
                   case 7:
                   {
                      
+                     setFeld(3,70,3,30,32,1,"");
+                     vga_command("f,3");
+                     //putch('x');
+                     //lcd_putc('+');
+                     
                   }break;
                   case 8:
                   {
+                     vga_command("f,3");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch(' ');
 
                      cursory++;
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch('>');
 
                   }break;
@@ -703,43 +746,40 @@ int main (void)
                   }break;
                   case 10:
                   {
-                     
-                  }break;
-                  case 11:
-                  {
-                     
+                     setHomeCentral();
                   }break;
                   case 12:
                   {
+                     vga_command("f,3");
+                     vga_command("e");
                      gotoxy(cursorx,cursory);
-                     vga_command("f,2");
+                     vga_command("f,3");
                      putch(' ');
-                    
-                     vga_command("f,2");
-                     gotoxy(10,10);
-                     vga_command("f,2");
+                     cursorx = CURSORX;
+                     cursory = CURSORY;
+                     gotoxy(CURSORX+1,CURSORY);
+                     vga_command("f,3");
                      puts("Alpha");
-                     gotoxy(10,11);
-                     vga_command("f,2");
+                     gotoxy(CURSORX+1,CURSORY+1);
+                     vga_command("f,3");
                      puts("Beta");
-                     gotoxy(10,12);
-                     vga_command("f,2");
+                     gotoxy(CURSORX+1,CURSORY+2);
+                     vga_command("f,3");
                      puts("Gamma");
-                     gotoxy(10,13);
-                     vga_command("f,2");
+                     gotoxy(CURSORX+1,CURSORY+3);
+                     vga_command("f,3");
                      puts("Delta");
-                     
-                     cursorx=9;
-                     cursory=10;
+                     gotoxy(cursorx,cursory);
+                     vga_command("f,3");
+                     putch('>');
 
                   }break;
                      
                      
                } // switch Taste
                
-               gotoxy(cursorx,cursory);
-               vga_command("f,2");
-               putch('*');
+               
+               
                lastrand = rand();
                vga_command("f,2");
 
