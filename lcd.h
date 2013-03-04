@@ -82,7 +82,7 @@
 #define LCD_FUNCTION_8x2        0x38   /* 5x7 characters, 2 line display */
 
 //Fleury
-#define LCD_LINES           2     /**< number of visible lines of the display */
+#define LCD_LINES           4     /**< number of visible lines of the display */
 #define LCD_DISP_LENGTH    20     /**< visibles characters per line of the display */
 #define LCD_START_LINE1  0x00     /**< DDRAM address of first char of line 1 */
 #define LCD_START_LINE2  0x40     /**< DDRAM address of first char of line 2 */

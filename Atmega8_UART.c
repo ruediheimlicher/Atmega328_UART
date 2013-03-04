@@ -46,18 +46,6 @@ void delay_ms(unsigned int ms)
 	}
 }
 
-//#define FOSC   7372000
-
-
-// FIFO-Objekte und Puffer für die Ein- und Ausgabe
-
-#define BUFSIZE_IN  0x40
-uint8_t inbuf[BUFSIZE_IN];
-//fifo_t infifo;
-
-#define BUFSIZE_OUT 0x40
-uint8_t outbuf[BUFSIZE_OUT];
-//fifo_t outfifo;
 
 void setHomeCentral(void)
 {
@@ -232,7 +220,7 @@ ISR( INT1_vect )
 	
 	if (spistatus & (1<<ACTIVE_BIT))									// CS ist LO, Interrupt ist OK
 	{
-      
+      BitCounter++;
       _delay_us(10);																	// PIN lesen:
 		
 		if (spistatus & (1<<STARTDATEN_BIT))						// out_startdaten senden, in_startdaten laden
@@ -255,6 +243,7 @@ ISR( INT1_vect )
 			
 			
 			// Output laden
+         
 			if (out_startdaten & (1<<(7-bitpos)))
 			{
 				SPI_CONTROL_PORT |= (1<<SPI_CONTROL_MISO);
@@ -504,7 +493,7 @@ int main (void)
    
    uart_init();
    
-  // InitSPI_Slave();
+   InitSPI_Slave();
    
    uint8_t linecounter=0;
    
@@ -527,19 +516,23 @@ int main (void)
    linecounter=0;
    uint8_t lastrand=rand();
    srand(1);
+   sei();
+   uint8_t x=0;
 	while (1)
 	{
 		loopCount0 ++;
 		
 		if (loopCount0 >=0x00FF)
 		{
-			readSR();
+			//readSR();
 			loopCount1++;
 			
 			if ((loopCount1 >0x01FF) )//&& (!(Programmstatus & (1<<MANUELL))))
 			{
              LOOPLED_PORT ^= (1<<LOOPLED_PIN);
              {
+             lcd_gotoxy(15,3);
+            lcd_putint(BitCounter);
                 /*
                loopCount2++;
                vga_command("f,2");
@@ -592,6 +585,12 @@ int main (void)
 			
 			loopCount0 =0;
       //
+         
+         goto NEXT;
+         {
+         cli();
+         
+         {
          Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
          
          //lcd_gotoxy(12,1);
@@ -782,11 +781,6 @@ int main (void)
                
                lastrand = rand();
                vga_command("f,2");
-
-             
-               
-               
-
                //putch(' ');
                
                //gotoxy(4,linecounter);
@@ -806,7 +800,13 @@ int main (void)
             }
             
          } // if Tastenwert
-
+            
+         }
+         
+         }
+      NEXT:
+         x=0;
+         sei();
          //
 		}
       
@@ -816,9 +816,12 @@ int main (void)
 		//lcd_putc('-');
 		
 		// ***********************
-		
-      if (SPI_CONTROL_PORTPIN & (1<< SPI_CONTROL_CS_HC)) // SPI ist Passiv
+		//goto ENDSPI;
+      if (SPI_CONTROL_PORTPIN & (1<< SPI_CONTROL_CS_HC)) // PIN ist Hi, SPI ist Passiv
 		{
+        // lcd_gotoxy(19,1);
+       //  lcd_putc('*');
+
 			// ***********************
 			/*
 			 Eine Uebertragung hat stattgefunden.
@@ -842,8 +845,8 @@ int main (void)
 				lcd_putc(' ');
 				
 				// in lcd verschoben
-				lcd_clr_line(2);
-				lcd_gotoxy(0,2);
+				//lcd_clr_line(2);
+				//lcd_gotoxy(0,2);
 				
 				// Eingang anzeigen
 				lcd_puts("iW \0");
@@ -853,7 +856,7 @@ int main (void)
 				lcd_puthex(in_lbdaten);
 				lcd_putc(' ');
 				uint8_t j=0;
-				for (j=0;j<4;j++)
+				for (j=0;j<1;j++)
 				{
 					//lcd_putc(' ');
 					lcd_puthex(inbuffer[j]);
@@ -863,12 +866,12 @@ int main (void)
 				
 				// Uebertragung pruefen
 				
-				lcd_gotoxy(6,0);
-				lcd_puts("bc:\0");
-				lcd_puthex(ByteCounter);
+				//lcd_gotoxy(6,0);
+				//lcd_puts("bc:\0");
+				//lcd_puthex(ByteCounter);
             
-            lcd_gotoxy(0,0);
-				lcd_puts("      \0");
+            //lcd_gotoxy(0,0);
+				//lcd_puts("      \0");
             
             
 				lcd_gotoxy(19,0);
@@ -894,6 +897,7 @@ int main (void)
 						}
 						spistatus |= (1<<SPI_SHIFT_IN_OK_BIT);
 					}
+               
 					else
 					{
 						spistatus &= ~(1<<SUCCESS_BIT); // Uebertragung fehlerhaft, Bit loeschen
@@ -921,12 +925,18 @@ int main (void)
 					lcd_clr_line(0);
 					lcd_gotoxy(0,0);
 					lcd_puts("ER2\0");
+               lcd_putc(' ');
+               lcd_puthex(ByteCounter);
+               lcd_putc(' ');
+               lcd_puthex(BitCounter);
+
+               /*
 					lcd_putc(' ');
                lcd_puthex(out_startdaten);
                lcd_puthex(in_enddaten);
                lcd_putc(' ');
                lcd_puthex(out_startdaten + in_enddaten);
-               
+               */
 					//delay_ms(100);
 					//errCounter++;
 					IncompleteCounter++;
@@ -1019,6 +1029,7 @@ int main (void)
 			if (!(spistatus & (1<<ACTIVE_BIT))) // CS ist neu aktiv geworden, Daten werden gesendet, Active-Bit 0 ist noch nicht gesetzt
 			{
 				// Aufnahme der Daten vom Webserver vorbereiten
+            
 				uint8_t j=0;
 				in_startdaten=0;
 				in_enddaten=0;
@@ -1039,13 +1050,13 @@ int main (void)
 				// Anzeige, das  rxdata vorhanden ist
 				lcd_gotoxy(19,0);
 				lcd_putc('$');
-            
+           
 				
 				
 				
 			}//										if (!(spistatus & (1<<ACTIVE_BIT)))
 		}//											(IS_CS_HC_ACTIVE)
-		
+   ENDSPI:
 		/* *** SPI end **************************************************************/
       
 # pragma mark Tasten	
@@ -1088,43 +1099,6 @@ int main (void)
 
       
 #pragma mark Tastatur
-      
-      
-     
-      //Tastenwert=(uint8_t)(readKanal(TASTATURKANAL)>>2);
-      //Tastenwert=0;
-      
-      
-      if (Tastenwert>23) // ca Minimalwert der Matrix
-      {
-         //			wdt_reset();
-         /*
-          0: Wochenplaninit
-          1: IOW 8* 2 Bytes auf Bus laden
-          2: Menu der aktuellen Ebene nach oben
-          3: IOW 2 Bytes vom Bus in Reg laden
-          4: Auf aktueller Ebene nach rechts (Heizung: Vortag lesen und anzeigen)
-          5: Ebene tiefer
-          6: Auf aktueller Ebene nach links (Heizung: Folgetag lesen und anzeigen)
-          7:
-          8: Menu der aktuellen Ebene nach unten
-          9: DCF77 lesen
-          
-          12: Ebene höher
-          */
-         /*
-         TastaturCount++;
-         if (TastaturCount>=8)	//	Prellen
-         {
-            Taste=Tastenwahl(Tastenwert);
-            lcd_gotoxy(12,1);
-            lcd_puts("T:\0");
-            lcd_gotoxy(14,1);
-            lcd_putint2(Taste);
-            
-         }
-         */
-      } // if Tastenwert
  
 	} // while
 	

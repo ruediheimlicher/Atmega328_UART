@@ -47,7 +47,7 @@ extern volatile uint8_t in_enddaten;					// Enddaten vom Master, Anzeige fuer vo
 #define SUCCESS_BIT				3
 #define LB_BIT						4
 #define HB_BIT						5
-//#define SPI_ERR_BIT				6 -> Bit 6 ist SPI_SHIFT_IN_OK_BIT
+//#define SPI_ERR_BIT			6 -> Bit 6 ist SPI_SHIFT_IN_OK_BIT
 #define SPI_SHIFT_IN_OK_BIT	6
 
 
@@ -96,6 +96,7 @@ volatile uint8_t								out_lbdaten;
 //extern volatile uint8_t						timer0startwert;
 
 static volatile uint8_t						ByteCounter=0xFF;
+static volatile uint16_t					BitCounter=0x0;
 volatile uint8_t								errCounter=0;
 volatile uint8_t								TWI_errCounter=0;
 
@@ -147,6 +148,7 @@ static volatile uint8_t						startbitpos=0;
 
 #define SPI_INT_DDR				DDRD
 #define SPI_INT_PORT          PORTD
+
 #define SPI_INT0_PIN       2
 #define SPI_INT1_PIN       3
 
@@ -242,7 +244,7 @@ ISR (TIMER0_OVF_vect)
 void InitSPI_Slave(void) 
 { 
 
-//	SPI_CONTROL_DDR   |= (1<<SPI_CONTROL_MISO);		// MISO als Output // KEINE FUNKTION, nur Zuhoerer
+	SPI_CONTROL_DDR   &= ~(1<<SPI_CONTROL_MISO);		// MISO als Input // KEINE FUNKTION, nur Zuhoerer
 	SPI_CONTROL_PORT	|= (1<<SPI_CONTROL_MISO);		// HI
 	SPI_CONTROL_DDR	&= ~(1<<SPI_CONTROL_CS_HC);	// Chip Select als Eingang
 	SPI_CONTROL_PORT	|= (1<<SPI_CONTROL_CS_HC);		// HI
@@ -251,7 +253,7 @@ void InitSPI_Slave(void)
 	SPI_CONTROL_PORT	|= (1<<SPI_CONTROL_MOSI);		// HI
 	
 	SPI_INT_DDR &= ~(1<<SPI_CONTROL_SCK);				// INT1 als SCK Eingang
-	SPI_INT_PORT |=(1<<SPI_CONTROL_SCK);				// HI
+	SPI_INT_PORT |= (1<<SPI_CONTROL_SCK);				// HI
 	
 //	PCICR |= (1<<PCIE0);
 //	PCMSK0 = (1<<PCINT0);
