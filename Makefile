@@ -43,7 +43,7 @@
 
 
 # MCU name
-MCU = atmega8
+MCU = atmega328p
 
 
 # Processor frequency.
@@ -59,7 +59,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = Atmega8_UART
+TARGET = Atmega328_UART
 
 
 # List C source files here. (C dependencies are automatically generated.)
@@ -362,7 +362,6 @@ sizeafter:
 	$(AVRMEM) 2>/dev/null; echo; fi
 
 
-
 # Display compiler version information.
 gccversion : 
 	@$(CC) --version
@@ -427,7 +426,6 @@ extcoff: $(TARGET).elf
 	@echo
 	@echo $(MSG_EXTENDED_COFF) $(TARGET).cof
 	$(COFFCONVERT) -O coff-ext-avr $< $(TARGET).cof
-
 
 
 # Create final output files (.hex, .eep) from ELF output file.

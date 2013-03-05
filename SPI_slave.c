@@ -260,21 +260,21 @@ void InitSPI_Slave(void)
 	_delay_us(5);
    
    // Atmega644
-   /*
+   
 	// interrupt on INT0 pin falling edge (sensor triggered) 
-	EICRA = (1<<ISC01) | (0<<ISC00);
+	EICRA = (1<<ISC11) | (0<<ISC10);
 	
 	// turn on interrupts!
-	EIMSK  |= (1<<INT0);
-    */
+	EIMSK  |= (1<<INT1);
+    
    
    // Atmega8
 	// interrupt on INT1 pin falling edge (sensor triggered)
-	MCUCR = (1<<ISC11) ;//| (0<<ISC00);
+	//MCUCR = (1<<ISC11) ;//| (0<<ISC00);
 	
 	// turn on interrupts!
-	GICR  |= (1<<INT1);
-   
+	//GICR  |= (1<<INT1); // Atmega8
+   //EIMSK  |= (1<<INT1);
    
 	_delay_us(5);
 
@@ -286,7 +286,7 @@ void InitSPI_Slave(void)
 
 // Interrupt Routine Slave Mode (interrupt controlled)
 // Aufgerufen bei fallender Flanke an INT0
-
+/*
 ISR( INT0_vect )
 {
 	
@@ -540,6 +540,6 @@ ISR( INT0_vect )
 	}						// if (spistatus & (1<<ACTIVE_BIT))
 	
 }		// ISR
-
+*/
 
 
