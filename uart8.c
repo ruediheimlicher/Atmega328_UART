@@ -12,7 +12,9 @@
 //#define RTS_PIN      5
 //#define CTS_PIN      4
 
-#define UART_STOP       7
+#define UART_STOP       7 // Ausgabe anhalten
+
+#define UART_DATA       6 // Daten anzeigen
 
 //defines max coordinates for checking overflow
 #define MAX_X 100
