@@ -50,6 +50,7 @@ void delay_ms(unsigned int ms)
 
 void setHomeCentral(void)
 {
+   
    //char header[]  = {"w,1,0,0,100,3,1,"};                 // no title
 
    //char footer[]  = {"w,5,0,49,100,1,0,"};
@@ -64,20 +65,20 @@ void setHomeCentral(void)
    
 
    posy+= 3;
-   setFeld(2,0,posy,60,10,1,""); // Heizung
+   setFeld(2,0,posy,46,6,1,""); // Heizung
    vga_command("f,2");
    vga_puts("Heizung");
    
    newline();
    
    
-   posy+= 10;
-   setFeld(3,0,posy,60,5,1,""); // Werkstatt
+   posy+= 6;
+   setFeld(3,0,posy,46,5,1,""); // Werkstatt
    vga_command("f,3");
    vga_puts("Werkstatt");
 
    posy+= 5;
-   setFeld(4,0,posy,60,5,1,""); // WoZi
+   setFeld(4,0,posy,46,5,1,""); // WoZi
    vga_command("f,4");
    vga_puts("WoZi");
    newline();
@@ -85,8 +86,30 @@ void setHomeCentral(void)
 
 
    posy+= 5;
-   setFeld(5,0,posy,100,22,1,""); // Daten
+   setFeld(5,0,posy,46,5,1,""); // Buero
    vga_command("f,5");
+   vga_puts("Buero");
+   
+   posy+= 5;
+   setFeld(6,0,posy,46,5,1,""); // Labor
+   vga_command("f,6");
+   vga_puts("Labor");
+
+   posy+= 5;
+   setFeld(7,0,posy,46,5,1,""); // OG
+   vga_command("f,7");
+   vga_puts("OG");
+
+   posy+= 5;
+   setFeld(8,0,posy,46,15,1,""); // Estrich
+   vga_command("f,8");
+   vga_puts("Estrich");
+
+   
+   
+   
+   setFeld(9,47,9,52,40,1,""); // Daten
+   vga_command("f,9");
    vga_puts("Data");
 
    
@@ -146,6 +169,76 @@ void setHeizung(uint8_t vorlauf, uint8_t ruecklauf, uint8_t aussen, uint8_t stat
    vga_puts("Rinne:");
 */
 }
+
+void setEstrich(uint8_t vorlauf, uint8_t ruecklauf, uint8_t boileru, uint8_t boilerm, uint8_t boilero, uint8_t kollektor, uint8_t status)
+{
+   
+   vga_puts("Vorlauf  :"); // Datapos (0,10)
+   vga_putint_right(vorlauf);
+   vga_leerschlag(3);
+   
+   vga_puts("Boiler O:"); // Datapos (0,10)
+   vga_putint_right(boilero);
+   vga_leerschlag(2);
+   
+   
+   vga_puts("Pumpe  :"); // Datapos (0,10)
+   if (status & 0x08) // Bit 3
+   {
+      vga_puts(" ON");
+   }
+   else
+   {
+      vga_puts("OFF");
+   }
+   
+   newline();
+   
+   vga_puts("Ruecklauf:");// Datapos (0,45)
+   vga_putint_right(ruecklauf);
+   vga_leerschlag(3);
+   
+   vga_puts("Boiler M:");// Datapos (0,25)
+   vga_putint_right(boilerm);
+   vga_leerschlag(2);
+   
+   
+   vga_puts("Elektro:");// Datapos (0,25)
+   if (status & 0x10) // Bit 4
+   {
+      vga_puts(" ON");
+   }
+   else
+   {
+      vga_puts("OFF");
+   }
+
+  
+   newline();
+   
+   vga_puts("Kollektor:");// Datapos (0,25)
+   vga_putint_right(kollektor);
+   vga_leerschlag(3);
+   
+
+   vga_puts("Boiler U:");// Datapos (0,25)
+   vga_putint_right(boileru);
+   vga_leerschlag(3);
+  
+   /*
+   vga_puts("Rinne :  ");// Datapos (0,45)
+   
+   if (status & 0xC0)
+   {
+      vga_puts(" ON");
+   }
+   else
+   {
+      vga_puts("OFF");
+   }
+   */
+ }
+
 
 uint8_t Tastenwahl(uint8_t Tastaturwert)
 {
@@ -567,187 +660,159 @@ int main (void)
             {
                if (!(uartstatus & (1<< UART_STOP)))
                {
-               //UART Stop anfang
-               incounter++;
-               lcd_clr_line(1);
-               lcd_gotoxy(0,1);
-               lcd_puts("OK \0");
-               lcd_puthex(in_startdaten+in_enddaten);
-               lcd_putc(' ');
-               //lcd_putint(incounter);
-               //lcd_puthex(in_enddaten);
-               //lcd_putc(' ');
-               lcd_puthex(out_startdaten+out_enddaten);
-               //lcd_putc(' ');
-               //lcd_putint(incounter);
-               //lcd_puthex(out_enddaten);
-               
-               cli();
-               //delay_ms(100);
-               vga_command("f,5");
-               
-               if (!(in_startdaten == 0xC0))
-               {
+ #pragma mark Ausgabe
+                  //UART Stop anfang
+                  incounter++;
+                  lcd_clr_line(1);
+                  lcd_gotoxy(0,1);
+                  lcd_puts("OK \0");
+                  lcd_puthex(in_startdaten+in_enddaten);
+                  lcd_putc(' ');
+                  //lcd_putint(incounter);
+                  //lcd_puthex(in_enddaten);
+                  //lcd_putc(' ');
+                  lcd_puthex(out_startdaten+out_enddaten);
+                  //lcd_putc(' ');
+                  //lcd_putint(incounter);
+                  //lcd_puthex(out_enddaten);
+                  
+                  cli();
+                  //delay_ms(100);
+                  
+                  vga_command("f,9");
                   newline();
-                  vga_putch('W');
-                  vga_putch('*');
-                  char in_string[4];
-                  int2hexstring(in_startdaten, (char*)&in_string);
-                  vga_puts(in_string);
-                  vga_putch('*');
-                  int2hexstring(in_lbdaten, (char*)&in_string);
-                  vga_puts(in_string);
-                  vga_putch(' ');
-                  int2hexstring(in_hbdaten, (char*)&in_string);
-                  vga_puts(in_string);
-                  vga_putch('*');
-                  vga_putch(' ');
+                  //if (!(in_startdaten == 0xC0))
+                  {
+                     newline();
+                     vga_puts("in Webserver");
+                     vga_putch(' ');
+                     char in_string[4];
+                     int2hexstring(in_startdaten, (char*)&in_string);
+                     vga_puts(in_string);
+                     vga_putch(' ');
+                     int2hexstring(in_lbdaten, (char*)&in_string);
+                     vga_puts(in_string);
+                     vga_putch(' ');
+                     int2hexstring(in_hbdaten, (char*)&in_string);
+                     vga_puts(in_string);
+                     vga_putch(' ');
+                     vga_putch(' ');
+                     uint8_t i;
+                     lcd_gotoxy(0,0);
+                     for (i=0;i<2;i++)
+                     {
+                        lcd_puthex(inbuffer[i+32]);
+                        lcd_putc(' ');
+                        
+                     }
+                     for (i=0;i<SPI_BUFSIZE;i++)
+                     {
+                        if (i%16 ==0)
+                        {
+                           newline();
+                           if (i)
+                           {
+                              vga_putch(' ');
+                              //vga_putch(' ');
+                           }
+                        }
+                        {
+                           char data_string[4];
+                           int2hexstring(inbuffer[i], (char*)&data_string);
+                           vga_puts(data_string);
+                           vga_putch(' ');
+                           
+                        }
+                     }
+                  }
+                  
+                  lcd_gotoxy(0,10);
+                  lcd_putc('*');
                   uint8_t i;
+                  for (i=0;i<3;i++)
+                  {
+                     lcd_puthex(inbuffer[i+32]);
+                     lcd_putc(' ');
+                     
+                  }
+                  
+                  newline();
+                  vga_puts("out Master");
+                  vga_putch(' ');
+                  char out_string[4];
+                  int2hexstring(out_startdaten, (char*)&out_string);
+                  vga_puts(out_string);
+                  vga_putch(' ');
+                  int2hexstring(out_lbdaten, (char*)&out_string);
+                  vga_puts(out_string);
+                  vga_putch(' ');
+                  int2hexstring(out_hbdaten, (char*)&out_string);
+                  vga_puts(out_string);
+                  vga_putch(' ');
+                  vga_putch(' ');
+                  
                   for (i=0;i<SPI_BUFSIZE;i++)
                   {
-                     if (i%24 ==0)
+                     if (i%16 ==0)
                      {
                         newline();
+                        if (i)
+                        {
+                           //vga_putch(' ');
+                           vga_putch(' ');
+                        }
+                        
                      }
                      {
                         char data_string[4];
-                        int2hexstring(inbuffer[i], (char*)&data_string);
+                        int2hexstring(outbuffer[i], (char*)&data_string);
                         vga_puts(data_string);
                         vga_putch(' ');
                         
                      }
                   }
+                   
+                  // Ausgang Master
+                  
+                  //   Zeit im Titelbalken angeben
+                  uint8_t stunde = (outbuffer[0] & 0x1F); // Stunde, Bit 0-4
+                  uint8_t minute = (outbuffer[1] & 0x3F); // Minute, Bit 0-5
+                  vga_command("f,2");
+                   vga_command("f,1");
+                  gotoxy(90,0);
+                  vga_command("f,1");
+                  vga_putint2(stunde);
+                  vga_putch(':');
+                  vga_putint2(minute);
+                  
+                  // Heizung ausgeben
+                  
+                  vga_command("f,2");
+                  vga_command("p,0,1");
+                  vga_command("f,2");
+                  setHeizung(outbuffer[2]/2,outbuffer[3]/2,outbuffer[4],outbuffer[5]);
+                  
+                   vga_command("f,4");
+                  gotoxy(18,1);
+                  vga_command("f,4");
+                  uint8_t innen = (outbuffer[7]);
+                  //vga_puthex(aussen);
+                  //vga_putch(' ');
+                  //vga_putint_right(innen);
+                  //vga_putch(' ');
+                  //char tempbuffer[8]={};
+                  char tempbuffer[8]={};
+                  vga_tempbis99(innen,tempbuffer);
+                  vga_puts(tempbuffer);
+
+                  vga_command("f,8");
+                  vga_command("p,0,1");
+                  vga_command("f,8");
+                  setEstrich(outbuffer[9]/2,outbuffer[10]/2,outbuffer[11]/2,outbuffer[12]/2,outbuffer[13]/2,outbuffer[14]/2,outbuffer[15]);
+                  
+                  //setEstrich(uint8_t vorlauf, uint8_t ruecklauf, uint8_t kollektor, uint8_t boileru, uint8_t boilerm, uint8_t boilero, uint8_t status)
+                  
                }
-               newline();
-               vga_putch('M');
-               vga_putch('*');
-               char out_string[4];
-               int2hexstring(out_startdaten, (char*)&out_string);
-               vga_puts(out_string);
-               vga_putch('*');
-               int2hexstring(out_lbdaten, (char*)&out_string);
-               vga_puts(out_string);
-               vga_putch(' ');
-               int2hexstring(out_hbdaten, (char*)&out_string);
-               vga_puts(out_string);
-               vga_putch('*');
-               vga_putch(' ');
-               uint8_t i;
-               for (i=0;i<SPI_BUFSIZE;i++)
-               {
-                  if (i%24 ==0)
-                  {
-                     newline();
-                  }
-                  {
-                     char data_string[4];
-                     int2hexstring(outbuffer[i], (char*)&data_string);
-                     vga_puts(data_string);
-                     vga_putch(' ');
-                     
-                  }
-               }
-               
-               
-               
-               // Ausgang Master
-               
-               //putint(254);
-              
-               
-               //   Zeit im Titelbalken angeben
-               uint8_t stunde = (outbuffer[0] & 0x1F); // Stunde, Bit 0-4
-               uint8_t minute = (outbuffer[1] & 0x3F); // Minute, Bit 0-5
-               vga_command("f,2");
-               //vga_puthex(outbuffer[0] & 0x1F);
-               //vga_putch(' ');
-               //vga_putint(outbuffer[0] & 0x1F);
-               //vga_putch(' ');
-               //vga_puthex(outbuffer[1]&0x7F);
-               //vga_putch(' ');
-               //vga_putint(outbuffer[23] & 0x1F);
-               //vga_putch(' ');
-               vga_command("f,1");
-               gotoxy(90,0);
-               vga_command("f,1");
-               vga_putint2(stunde);
-               vga_putch(':');
-               vga_putint2(minute);
-               
-               // Heizung ausgeben
-                  
-               vga_command("f,2");
-               vga_command("p,0,1");
-               vga_command("f,2");
-               setHeizung(outbuffer[2]/2,outbuffer[3]/2,outbuffer[4],outbuffer[5]);
-                  
-               //itoa(outbuffer[2]++,d,16);
-              // uint8_t aussen = (outbuffer[4]);
-/*
-               vga_command("p,0,15");
-               vga_command("f,2");  
-               vga_putint_right(outbuffer[2]/2);  
-               vga_command("p,0,25");
-               vga_command("f,2");
-               vga_putint_right(outbuffer[3]/2);
-                  
-                  
-                  
-                  
- 
-               vga_command("p,0,80");
-               vga_command("f,2");
-                  
-                  
-               vga_putch(' ');
-               vga_putch('V');
-               vga_putch(':');
-               
-               //vga_putint_right(outbuffer[2]);
-               //vga_putch(' ');
-               vga_putint_right(outbuffer[2]/2);
-               //vga_putch('$');
-               //vga_putint_right(outbuffer[2]&0x7F);
-               //vga_putch(' ');
-               
-               outbuffer[2]=0;
-               vga_putch(' ');
-               vga_putch('R');
-               vga_putch(':');
-               //vga_puthex(outbuffer[3]);
-               //vga_putch(' ');
-               vga_putint_right(outbuffer[3]/2);
-               vga_putch(' ');
-               outbuffer[3]=0;
-               vga_putch('A');
-               vga_putch(':');
-               uint8_t aussen = (outbuffer[4]);
-               //vga_puthex(aussen);
-               //vga_putch(' ');
-               //vga_putint_right(aussen);
-               //vga_putch(' ');
-               char tempbuffer[8]={};
-               vga_tempbis99(aussen-0x20,tempbuffer);
-               vga_puts(tempbuffer);
-               vga_putch(' ');
-               newline();
-               //vga_putch('I');
-               //vga_putch(':');
-               */
-               vga_command("f,4");
-               gotoxy(18,1);
-               vga_command("f,4");
-               uint8_t innen = (outbuffer[7]);
-               //vga_puthex(aussen);
-               //vga_putch(' ');
-               //vga_putint_right(innen);
-               //vga_putch(' ');
-               //char tempbuffer[8]={};
-               char tempbuffer[8]={};
-               vga_tempbis99(innen,tempbuffer);
-               vga_puts(tempbuffer);
-               
-            }
                // UART Stop end
                
                uartstatus &= ~(1<< SUCCESS_BIT);
@@ -780,53 +845,7 @@ int main (void)
                
             }
              {
-             //lcd_gotoxy(15,3);
-            //lcd_putint(BitCounter);
-                /*
-               loopCount2++;
-               vga_command("f,2");
-               //puts("HomeCentral ");
-                vga_puts("Tastenwert ");
-               putint(Tastenwert);
-               vga_putch(' ');
-              newline();
-                 */
-                /*
-               if (loopCount2 > 2)
-               {
-                  newline();
-                  linecounter++;
-                  if (linecounter>50)
-                  {
-                     linecounter=0;
-                     vga_command("e");
-                  }
-                  if (linecounter %3==0)
-                  {
-                     //linecounter =0;
-                     linecounter+=1;
-                     gotoxy(8,linecounter);
-                     vga_command("f,2");
-                     vga_puts("Stop");
-                     putint_right(linecounter);
-                     vga_putch(' ');
-                     putint(Tastenwert);
-                     //newline();
-                     vga_command("f,1");
-                     vga_command("e");
-                     vga_puts("Daten");
-                     putint_right(linecounter);
-                     vga_command("f,2");
-                     //vga_command("e");
-                     
-                     gotoxy(0,linecounter);
-                     vga_command("f,2");
-                     newline();
-                  }
-                  loopCount2=0;
-               }
-               */
-               loopCount1=0;
+                loopCount1=0;
                
             } // if startcounter
             
@@ -932,7 +951,10 @@ int main (void)
                   }break;
                   case 3:
                   {
-                     
+                     lcd_initialize(LCD_FUNCTION_8x2, LCD_CMD_ENTRY_INC, LCD_CMD_ON);
+                     lcd_puts("Guten Tag\0");
+                     delay_ms(1000);
+
                   }break;
                   case 4:
                   {
@@ -1150,9 +1172,9 @@ int main (void)
             
 				// Uebertragung pruefen
 				
-				lcd_gotoxy(7,0);
-				lcd_puts("bc:\0");
-				lcd_puthex(ByteCounter);
+				//lcd_gotoxy(7,0);
+				//lcd_puts("bc:\0");
+				//lcd_puthex(ByteCounter);
             
             //lcd_gotoxy(0,0);
 				//lcd_puts("      \0");
