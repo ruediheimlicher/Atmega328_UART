@@ -78,7 +78,6 @@ void uart_init (void)
 
 void vga_putch (char ch)
 {
-   
 
 	while(!(UCSR0A & (1<<UDRE0))); //transmit buffer is ready to receive data
 	UDR0 = ch;    // send character
