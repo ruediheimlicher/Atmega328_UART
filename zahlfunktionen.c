@@ -86,12 +86,9 @@ void int2hexstring(uint8_t zahl,char* hexstring)
       h%=10;
       hexstring[0]=h + 'A';
 	}
-	
-	
+
 	
 }
-
-
 
 void vga_tempbis99(uint16_t temperatur,char*tempbuffer)
 {
