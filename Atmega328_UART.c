@@ -642,7 +642,7 @@ int main (void)
    //srand(1);
    sei();
    uint8_t incounter=0;
-   //uint8_t x=0;
+   uint8_t x=0;
 #pragma mark while
 	while (1)
 	{
@@ -656,6 +656,10 @@ int main (void)
 			if ((loopCount1 >0x01FF) )//&& (!(Programmstatus & (1<<MANUELL))))
 			{
              LOOPLED_PORT ^= (1<<LOOPLED_PIN);
+            lcd_gotoxy(0,0);
+            lcd_putint(x);
+            x++;
+
             if ((uartstatus & (1<< SUCCESS_BIT))&& (SPI_CONTROL_PORTPIN & (1<<SPI_CONTROL_CS_HC)))
             {
                if (!(uartstatus & (1<< UART_STOP)))

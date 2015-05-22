@@ -48,9 +48,9 @@
  #define LCD_PORT                PORTC
  #define LCD_DDR						DDRC
 
-#define LCD_RSDS_PIN            0
-#define LCD_ENABLE_PIN          1
-#define LCD_CLOCK_PIN           2
+#define LCD_RSDS_PIN            3
+#define LCD_ENABLE_PIN          4
+#define LCD_CLOCK_PIN           5
 
 #define LCD_BACKLIGHT_PIN       7
 
